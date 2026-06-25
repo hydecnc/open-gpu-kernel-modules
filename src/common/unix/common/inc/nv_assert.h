@@ -54,6 +54,10 @@ extern "C" {
 
   void nvDebugAssert(const char *expString, const char *filenameString,
                      const char *funcString, const unsigned int lineNumber);
+#ifdef PANIC_ON_ASSERT
+    void panic(const char *fmt, ...);
+#endif
+  void dump_stack(void);
 
   /*
    * Assert that (exp) is TRUE.  We use 'if (exp) { } else { fail }'
@@ -61,6 +65,17 @@ extern "C" {
    * accidentally write nvAssert(foo = bar) instead of nvAssert(foo ==
    * bar).
    */
+#ifdef PANIC_ON_ASSERT
+  #define nvAssert(exp)                                            \
+    do {                                                           \
+        if (exp) {                                                 \
+        } else {                                                   \
+            nvDebugAssert(#exp, __FILE__, __FUNCTION__, __LINE__); \
+            dump_stack();                                          \
+            panic("nvAssert failed");                              \
+        }                                                          \
+    } while (0)
+#else
   #define nvAssert(exp)                                            \
     do {                                                           \
         if (exp) {                                                 \
@@ -68,6 +83,7 @@ extern "C" {
             nvDebugAssert(#exp, __FILE__, __FUNCTION__, __LINE__); \
         }                                                          \
     } while (0)
+#endif
 
 #else
 

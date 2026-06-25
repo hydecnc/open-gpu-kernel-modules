@@ -78,6 +78,10 @@ $(foreach _module, $(NV_KERNEL_MODULES), \
 ccflags-y += -I$(src)/common/inc
 ccflags-y += -I$(src)
 ccflags-y += -Wall $(DEFINES) $(INCLUDES) -Wno-cast-qual -Wno-format-extra-args
+ccflags-y += -fsanitize=kernel-address -fasan-shadow-offset=0xdffffc0000000000 --param asan-globals=1 --param asan-instrumentation-with-call-threshold=10000 --param asan-instrument-allocas=1 --param asan-stack=1
+# ccflags-y += -fsanitize=bounds-strict -fsanitize=shift -fsanitize=bool -fsanitize=enum
+ccflags-y += -fsanitize-coverage=trace-pc -fsanitize-coverage=trace-cmp
+
 ccflags-y += -D__KERNEL__ -DMODULE -DNVRM
 ccflags-y += -DNV_VERSION_STRING=\"580.95.05\"
 

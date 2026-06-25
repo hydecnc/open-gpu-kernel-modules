@@ -244,6 +244,9 @@ void on_uvm_assert(void)
 #ifdef __COVERITY__
     __coverity_panic__()
 #endif
+#ifdef PANIC_ON_ASSERT
+    panic("Panic on UVM assertion failure");
+#endif
 }
 
 NV_STATUS uvm_spin_loop(uvm_spin_loop_t *spin)
