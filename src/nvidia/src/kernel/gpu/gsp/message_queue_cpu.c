@@ -295,6 +295,7 @@ GspMsgQueuesInit
 
     statusQueueIOVA = memdescGetPhysAddr(pMQCollection->pSharedMemDesc, AT_GPU, statusQueueOffset);
     NV_PRINTF(LEVEL_ERROR, "[GPUBREACH-D2H]   Status Queue IOVA (GPU view): 0x%llx\n", statusQueueIOVA);
+    NV_PRINTF(LEVEL_ERROR, "[GPUBREACH-D2H]   Status Queue Size: 0x%llx\n", pRmQueueInfo->statusQueueSize);
 
     // Assert that the last queue offset + size fits into the shared memory.
     NV_ASSERT(NvP64_PLUS_OFFSET(pVaKernel, sharedBufSize) ==
