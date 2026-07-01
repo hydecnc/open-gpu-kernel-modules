@@ -33,6 +33,7 @@
 #include "nv-reg.h"
 #include "conftest/patches.h"
 #include "nv-ibmnpu.h"
+#include "gpu_instrumentation.h"
 
 #define NV_DEFINE_SINGLE_NVRM_PROCFS_FILE(name) \
     NV_DEFINE_SINGLE_PROCFS_FILE_READ_ONLY(name, nv_system_pm_lock)
@@ -236,6 +237,31 @@ nv_procfs_read_version(
 }
 
 NV_DEFINE_SINGLE_NVRM_PROCFS_FILE(version);
+
+static int
+nv_procfs_read_instrumentation(
+    struct seq_file *s,
+    void *v
+)
+{
+    const struct GspMsgQueueInfo *info = getGspMsgQueueInfo();
+
+    if (!info) {
+        seq_printf(s, "no info on GSP message queue\n");
+        return 0;
+    }
+
+    seq_printf(s, "shared_mem_kva=0x%llx\n",      info->shared_mem_kva);
+    seq_printf(s, "shared_mem_size=0x%llx\n",     info->shared_mem_size);
+    seq_printf(s, "cmd_queue_offset=0x%llx\n",    info->cmd_queue_offset);
+    seq_printf(s, "cmd_queue_size=0x%llx\n",      info->cmd_queue_size);
+    seq_printf(s, "status_queue_offset=0x%llx\n", info->status_queue_offset);
+    seq_printf(s, "status_queue_size=0x%llx\n",   info->status_queue_size);
+
+    return 0;
+}
+
+NV_DEFINE_SINGLE_PROCFS_FILE_READ_ONLY_WITHOUT_LOCK(instrumentation)
 
 static void
 nv_procfs_close_file(
@@ -1408,6 +1434,10 @@ int nv_procfs_add_gpu(nv_linux_state_t *nvl)
         goto failed;
 
     entry = NV_CREATE_PROC_FILE("power", proc_nvidia_gpu, power, nv);
+    if (!entry)
+        goto failed;
+
+    entry = NV_CREATE_PROC_FILE("instrumentation", proc_nvidia_gpu, instrumentation, nv);
     if (!entry)
         goto failed;
 

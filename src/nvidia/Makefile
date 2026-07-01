@@ -75,6 +75,9 @@ CFLAGS += -Wundef
 CFLAGS += -fno-common
 CFLAGS += -ffreestanding
 CFLAGS += -fno-stack-protector
+CFLAGS += -fsanitize=kernel-address -fasan-shadow-offset=0xdffffc0000000000 --param asan-globals=1 --param asan-instrumentation-with-call-threshold=10000 --param asan-instrument-allocas=1 --param asan-stack=1
+#CFLAGS += -fsanitize=bounds-strict -fsanitize=shift -fsanitize=bool -fsanitize=enum
+CFLAGS += -fsanitize-coverage=trace-pc -fsanitize-coverage=trace-cmp
 
 ifeq ($(TARGET_ARCH),x86_64)
   CFLAGS += -msoft-float

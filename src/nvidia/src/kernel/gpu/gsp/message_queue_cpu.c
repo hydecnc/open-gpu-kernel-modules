@@ -53,6 +53,7 @@
 #include "nvrm_registry.h"
 #include "gpu/conf_compute/ccsl.h"
 #include "gpu/conf_compute/conf_compute.h"
+#include "gpu/gsp/gpu_instrumentation.h"
 
 ct_assert(GSP_MSG_QUEUE_HEADER_SIZE > sizeof(msgqTxHeader) + sizeof(msgqRxHeader));
 
@@ -285,6 +286,18 @@ GspMsgQueuesInit
     lastQueueVa   = NV_PTR_TO_NvP64(pRmQueueInfo->pStatusQueue);
     lastQueueSize = pRmQueueInfo->statusQueueSize;
 
+    {
+      const struct GspMsgQueueInfo info = {
+        .shared_mem_kva    = (NvU64)(NvUPtr)NvP64_VALUE(pVaKernel),
+        .shared_mem_size   = sharedBufSize,
+        .cmd_queue_offset  = pMQCollection->pageTableSize,
+        .cmd_queue_size    = pRmQueueInfo->commandQueueSize,
+        .status_queue_offset = pMQCollection->pageTableSize + pRmQueueInfo->commandQueueSize,
+        .status_queue_size   = pRmQueueInfo->statusQueueSize,
+      };
+      setGspMsgQueueInfo(&info);
+    }
+
     // Assert that the last queue offset + size fits into the shared memory.
     NV_ASSERT(NvP64_PLUS_OFFSET(pVaKernel, sharedBufSize) ==
               NvP64_PLUS_OFFSET(lastQueueVa, lastQueueSize));
@@ -403,6 +416,8 @@ void GspMsgQueuesCleanup(MESSAGE_QUEUE_COLLECTION **ppMQCollection)
 
     if ((ppMQCollection == NULL) || (*ppMQCollection == NULL))
         return;
+
+    clearGspMsgQueueInfo();
 
     pMQCollection     = *ppMQCollection;
     pRmQueueInfo      = &pMQCollection->rpcQueues[RPC_TASK_RM_QUEUE_IDX];
