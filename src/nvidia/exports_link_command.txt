@@ -205,3 +205,4 @@
 --undefined=rm_disable_iomap_wc
 --undefined=rm_is_altstack_in_use
 --undefined=rm_acpi_nvpcf_notify
+--undefined=getGspMsgQueueInfo
