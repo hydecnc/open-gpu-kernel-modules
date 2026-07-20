@@ -289,9 +289,10 @@ GspMsgQueuesInit
     {
       const NvU64 statusQueueOffset = pMQCollection->pageTableSize + pRmQueueInfo->commandQueueSize;
       const struct GspMsgQueueInfo info = {
-        .status_queue_iova   = memdescGetPhysAddr(pMQCollection->pSharedMemDesc, AT_GPU, statusQueueOffset),
+        .status_queue_iova   = memdescGetPhysAddr(pMQCollection->pSharedMemDesc, AT_CPU, statusQueueOffset),
         .status_queue_offset = statusQueueOffset,
         .status_queue_size   = pRmQueueInfo->statusQueueSize,
+        .rx_seq_num_addr   = &pRmQueueInfo->rxSeqNum,
       };
       setGspMsgQueueInfo(&info);
     }
@@ -414,6 +415,8 @@ void GspMsgQueuesCleanup(MESSAGE_QUEUE_COLLECTION **ppMQCollection)
 
     if ((ppMQCollection == NULL) || (*ppMQCollection == NULL))
         return;
+
+    clearGspMsgQueueInfo();
 
     pMQCollection     = *ppMQCollection;
     pRmQueueInfo      = &pMQCollection->rpcQueues[RPC_TASK_RM_QUEUE_IDX];

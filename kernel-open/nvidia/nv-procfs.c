@@ -254,6 +254,8 @@ nv_procfs_read_instrumentation(
     seq_printf(s, "status_queue_iova=0x%llx\n",   info->status_queue_iova);
     seq_printf(s, "status_queue_offset=0x%llx\n", info->status_queue_offset);
     seq_printf(s, "status_queue_size=0x%llx\n",   info->status_queue_size);
+    if (info->rx_seq_num_addr != NULL)
+      seq_printf(s, "rx_seq_num=%u\n",   *info->rx_seq_num_addr);
 
     return 0;
 }

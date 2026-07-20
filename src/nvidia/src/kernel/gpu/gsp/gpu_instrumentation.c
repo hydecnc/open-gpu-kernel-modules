@@ -9,9 +9,8 @@ void setGspMsgQueueInfo(const struct GspMsgQueueInfo *info) {
   info_valid = 1;
 }
 
+void clearGspMsgQueueInfo(void) { info_valid = 0; }
+
 const struct GspMsgQueueInfo *getGspMsgQueueInfo(void) {
-  if (!info_valid) {
-    return NULL;
-  }
-  return &cached_info;
+  return info_valid ? &cached_info : NULL;
 }
