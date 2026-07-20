@@ -76,6 +76,8 @@ CFLAGS += -fno-common
 CFLAGS += -ffreestanding
 CFLAGS += -fno-stack-protector
 
+CFLAGS += -DGPU_INSTRUMENTATION
+
 ifeq ($(TARGET_ARCH),x86_64)
   CFLAGS += -msoft-float
   CFLAGS += -mno-red-zone

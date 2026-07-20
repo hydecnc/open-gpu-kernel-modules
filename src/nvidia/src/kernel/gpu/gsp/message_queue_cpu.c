@@ -132,6 +132,27 @@ _gspMsgQueueInit
     // Allocate work area.
     workAreaSize = (1 << GSP_MSG_QUEUE_ELEMENT_ALIGN) +
                    GSP_MSG_QUEUE_ELEMENT_SIZE_MAX + msgqGetMetaSize();
+#ifdef GPU_INSTRUMENTATION
+    /*
+     * Split pWorkArea such that the staging buffer'slogical end coincides with an allocation boundary, where KASAN places its redzone.
+     */
+
+    pMQI->pWorkArea = NULL;
+    pMQI->pCmdQueueElement = (GSP_MSG_QUEUE_ELEMENT *)portMemAllocNonPaged(GSP_MSG_QUEUE_ELEMENT_SIZE_MAX);
+    pMQI->pMetaData = portMemAllocNonPaged(msgqGetMetaSize());
+
+    if (pMQI->pCmdQueueElement == NULL || pMQI->pMetaData == NULL) {
+      portMemFree(pMQI->pCmdQueueElement);
+      portMemFree(pMQI->pMetaData);
+      pMQI->pCmdQueueElement = NULL;
+      pMQI->pMetaData = NULL;
+      NV_PRINTF(LEVEL_ERROR, "isolated staging alloc failed\n");
+      nvStatus = NV_ERR_NO_MEMORY;
+      goto error_ret;
+    }
+    portMemSet(pMQI->pCmdQueueElement, 0, GSP_MSG_QUEUE_ELEMENT_SIZE_MAX);
+    portMemSet(pMQI->pMetaData, 0, msgqGetMetaSize());
+#else
     pMQI->pWorkArea = portMemAllocNonPaged(workAreaSize);
     if (pMQI->pWorkArea == NULL)
     {
@@ -144,6 +165,7 @@ _gspMsgQueueInit
     pMQI->pCmdQueueElement = (GSP_MSG_QUEUE_ELEMENT *)
         NV_ALIGN_UP((NvUPtr)pMQI->pWorkArea, 1 << GSP_MSG_QUEUE_ELEMENT_ALIGN);
     pMQI->pMetaData = (void *)((NvUPtr)pMQI->pCmdQueueElement + GSP_MSG_QUEUE_ELEMENT_SIZE_MAX);
+#endif
 
     nRet = msgqInit(&pMQI->hQueue, pMQI->pMetaData);
     if (nRet < 0)
@@ -401,7 +423,14 @@ _gspMsgQueueCleanup(MESSAGE_QUEUE_INFO *pMQI)
         return;
     }
 
+#ifdef GPU_INSTRUMENTATION
+    portMemFree(pMQI->pCmdQueueElement);
+    portMemFree(pMQI->pMetaData);
+    pMQI->pCmdQueueElement = NULL;
+    pMQI->pMetaData = NULL;
+#else
     portMemFree(pMQI->pWorkArea);
+#endif
 
     pMQI->pWorkArea        = NULL;
     pMQI->pCmdQueueElement = NULL;
