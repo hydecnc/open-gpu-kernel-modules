@@ -138,12 +138,12 @@ _gspMsgQueueInit
      */
 
     pMQI->pWorkArea = NULL;
-    pMQI->pCmdQueueElement = (GSP_MSG_QUEUE_ELEMENT *)portMemAllocNonPaged(GSP_MSG_QUEUE_ELEMENT_SIZE_MAX);
-    pMQI->pMetaData = portMemAllocNonPaged(msgqGetMetaSize());
+    pMQI->pCmdQueueElement = (GSP_MSG_QUEUE_ELEMENT *)_portMemAllocNonPagedUntracked(GSP_MSG_QUEUE_ELEMENT_SIZE_MAX);
+    pMQI->pMetaData = _portMemAllocNonPagedUntracked(msgqGetMetaSize());
 
     if (pMQI->pCmdQueueElement == NULL || pMQI->pMetaData == NULL) {
-      portMemFree(pMQI->pCmdQueueElement);
-      portMemFree(pMQI->pMetaData);
+      _portMemFreeUntracked(pMQI->pCmdQueueElement);
+      _portMemFreeUntracked(pMQI->pMetaData);
       pMQI->pCmdQueueElement = NULL;
       pMQI->pMetaData = NULL;
       NV_PRINTF(LEVEL_ERROR, "isolated staging alloc failed\n");
@@ -424,8 +424,8 @@ _gspMsgQueueCleanup(MESSAGE_QUEUE_INFO *pMQI)
     }
 
 #ifdef GPU_INSTRUMENTATION
-    portMemFree(pMQI->pCmdQueueElement);
-    portMemFree(pMQI->pMetaData);
+    _portMemFreeUntracked(pMQI->pCmdQueueElement);
+    _portMemFreeUntracked(pMQI->pMetaData);
     pMQI->pCmdQueueElement = NULL;
     pMQI->pMetaData = NULL;
 #else
