@@ -315,10 +315,12 @@ bindataArchiveGetStorage(
     }
 
     NvU32 i;
+    NvLength len2;
     NvLength len = portStringLength(binName) + 1;
     for (i = 0 ; i < pBinArchive->entryNum; i++)
     {
-        if (portStringCompare(binName, pBinArchive->entries[i].name, len) == 0)
+        len2 = portStringLength(pBinArchive->entries[i].name) + 1;
+        if (len == len2 && portStringCompare(binName, pBinArchive->entries[i].name, len) == 0)
         {
             bindataMarkReferenced(pBinArchive->entries[i].pBinStorage);
             return pBinArchive->entries[i].pBinStorage;
