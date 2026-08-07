@@ -315,6 +315,10 @@ GspMsgQueuesInit
         .status_queue_offset = statusQueueOffset,
         .status_queue_size   = pRmQueueInfo->statusQueueSize,
         .rx_seq_num_addr   = &pRmQueueInfo->rxSeqNum,
+        .shared_mem_kva    = (NvU64)(NvUPtr)NvP64_VALUE(pVaKernel),
+        .shared_mem_size   = sharedBufSize,
+        .cmd_queue_offset  = pMQCollection->pageTableSize,
+        .cmd_queue_size    = pRmQueueInfo->commandQueueSize,
       };
       setGspMsgQueueInfo(&info);
     }

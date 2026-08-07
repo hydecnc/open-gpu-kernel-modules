@@ -251,11 +251,19 @@ nv_procfs_read_instrumentation(
         return 0;
     }
 
+    //
+    // Existing readers (harness, StepStone executor) parse this positionally
+    // with fscanf("%*[^=]=%lx"), so new keys are only ever appended.
+    //
     seq_printf(s, "status_queue_iova=0x%llx\n",   info->status_queue_iova);
     seq_printf(s, "status_queue_offset=0x%llx\n", info->status_queue_offset);
     seq_printf(s, "status_queue_size=0x%llx\n",   info->status_queue_size);
     if (info->rx_seq_num_addr != NULL)
       seq_printf(s, "rx_seq_num=%u\n",   *info->rx_seq_num_addr);
+    seq_printf(s, "shared_mem_kva=0x%llx\n",      info->shared_mem_kva);
+    seq_printf(s, "shared_mem_size=0x%llx\n",     info->shared_mem_size);
+    seq_printf(s, "cmd_queue_offset=0x%llx\n",    info->cmd_queue_offset);
+    seq_printf(s, "cmd_queue_size=0x%llx\n",      info->cmd_queue_size);
 
     return 0;
 }
