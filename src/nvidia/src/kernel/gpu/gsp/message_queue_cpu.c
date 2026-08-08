@@ -692,6 +692,25 @@ NV_STATUS GspMsgQueueReceiveStatus(MESSAGE_QUEUE_INFO *pMQI, OBJGPU *pGpu)
                 break;
             }
 
+#ifdef GPU_INSTRUMENTATION
+            //
+            // KASAN cannot see the copy below. Both this tree and kernel-open
+            // are built -ffreestanding (src/nvidia/Makefile, kernel-open/Kbuild),
+            // which implies -fno-builtin, so GCC never rewrites os_mem_copy()'s
+            // memcpy() into __asan_memcpy() - it calls the kernel's hand-written
+            // memcpy, which carries no shadow checks. Only compiler-generated
+            // accesses get instrumented.
+            //
+            // So poke both ends of the destination window with ordinary stores.
+            // Those *are* instrumented, and portMemCopy overwrites them
+            // immediately, so this changes nothing except detectability: the
+            // 17th element starts exactly at the redzone of the 65536-byte
+            // staging buffer, and this store is what reports it.
+            //
+            ((volatile NvU8 *)pTgt)[0] = 0;
+            ((volatile NvU8 *)pTgt)[GSP_MSG_QUEUE_ELEMENT_SIZE_MIN - 1] = 0;
+#endif
+
             // Copy the next element to our staging area.
             portMemCopy(pTgt, GSP_MSG_QUEUE_ELEMENT_SIZE_MIN,
                         pNextElement, GSP_MSG_QUEUE_ELEMENT_SIZE_MIN);
