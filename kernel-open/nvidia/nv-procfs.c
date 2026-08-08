@@ -252,20 +252,18 @@ nv_procfs_read_instrumentation(
     }
 
     //
-    // Existing readers (harness, StepStone executor) parse this positionally
-    // with fscanf("%*[^=]=%lx"), so new keys are only ever appended.
+    // Readers must parse this by key. The rx_seq_num line is conditional, and
+    // keys have been both added and removed, so position means nothing.
     //
-    seq_printf(s, "status_queue_iova=0x%llx\n",   info->status_queue_iova);
-    seq_printf(s, "status_queue_offset=0x%llx\n", info->status_queue_offset);
-    seq_printf(s, "status_queue_size=0x%llx\n",   info->status_queue_size);
-    if (info->rx_seq_num_addr != NULL)
-      seq_printf(s, "rx_seq_num=%u\n",   *info->rx_seq_num_addr);
     seq_printf(s, "shared_mem_kva=0x%llx\n",      info->shared_mem_kva);
     seq_printf(s, "shared_mem_size=0x%llx\n",     info->shared_mem_size);
     seq_printf(s, "cmd_queue_offset=0x%llx\n",    info->cmd_queue_offset);
     seq_printf(s, "cmd_queue_size=0x%llx\n",      info->cmd_queue_size);
+    seq_printf(s, "status_queue_offset=0x%llx\n", info->status_queue_offset);
+    seq_printf(s, "status_queue_size=0x%llx\n",   info->status_queue_size);
+    if (info->rx_seq_num_addr != NULL)
+      seq_printf(s, "rx_seq_num=%u\n",   *info->rx_seq_num_addr);
     seq_printf(s, "staging_kva=0x%llx\n",         info->staging_kva);
-    seq_printf(s, "staging_size=0x%llx\n",        info->staging_size);
     seq_printf(s, "staging_isolated=%llu\n",      info->staging_isolated);
 
     return 0;

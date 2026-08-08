@@ -4,7 +4,6 @@
 // Must mirror struct GspMsgQueueInfo in
 // src/nvidia/inc/kernel/gpu/gsp/gpu_instrumentation.h.
 struct GspMsgQueueInfo {
-  u64 status_queue_iova;
   u64 status_queue_offset;
   u64 status_queue_size;
   u32 *rx_seq_num_addr;
@@ -13,7 +12,6 @@ struct GspMsgQueueInfo {
   u64 cmd_queue_offset;
   u64 cmd_queue_size;
   u64 staging_kva;
-  u64 staging_size;
   u64 staging_isolated;
 };
 

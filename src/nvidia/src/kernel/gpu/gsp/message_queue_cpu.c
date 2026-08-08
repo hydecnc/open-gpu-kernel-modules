@@ -172,11 +172,9 @@ _gspMsgQueueInit
     // visible to KASAN depends on this address, not on the injection.
     //
 #ifdef GPU_INSTRUMENTATION
-    setGspStagingBuffer((NvU64)(NvUPtr)pMQI->pCmdQueueElement,
-                        GSP_MSG_QUEUE_ELEMENT_SIZE_MAX, 1);
+    setGspStagingBuffer((NvU64)(NvUPtr)pMQI->pCmdQueueElement, 1);
 #else
-    setGspStagingBuffer((NvU64)(NvUPtr)pMQI->pCmdQueueElement,
-                        GSP_MSG_QUEUE_ELEMENT_SIZE_MAX, 0);
+    setGspStagingBuffer((NvU64)(NvUPtr)pMQI->pCmdQueueElement, 0);
 #endif
 
     nRet = msgqInit(&pMQI->hQueue, pMQI->pMetaData);
@@ -323,7 +321,6 @@ GspMsgQueuesInit
     {
       const NvU64 statusQueueOffset = pMQCollection->pageTableSize + pRmQueueInfo->commandQueueSize;
       const struct GspMsgQueueInfo info = {
-        .status_queue_iova   = memdescGetPhysAddr(pMQCollection->pSharedMemDesc, AT_CPU, statusQueueOffset),
         .status_queue_offset = statusQueueOffset,
         .status_queue_size   = pRmQueueInfo->statusQueueSize,
         .rx_seq_num_addr   = &pRmQueueInfo->rxSeqNum,
