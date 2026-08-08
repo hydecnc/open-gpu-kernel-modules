@@ -172,9 +172,11 @@ _gspMsgQueueInit
     // visible to KASAN depends on this address, not on the injection.
     //
 #ifdef GPU_INSTRUMENTATION
-    setGspStagingBuffer((NvU64)(NvUPtr)pMQI->pCmdQueueElement, 1);
+    setGspStagingBuffer((NvU64)(NvUPtr)pMQI->pCmdQueueElement,
+                        GSP_MSG_QUEUE_ELEMENT_SIZE_MAX, 1);
 #else
-    setGspStagingBuffer((NvU64)(NvUPtr)pMQI->pCmdQueueElement, 0);
+    setGspStagingBuffer((NvU64)(NvUPtr)pMQI->pCmdQueueElement,
+                        GSP_MSG_QUEUE_ELEMENT_SIZE_MAX, 0);
 #endif
 
     nRet = msgqInit(&pMQI->hQueue, pMQI->pMetaData);
@@ -319,15 +321,14 @@ GspMsgQueuesInit
     lastQueueSize = pRmQueueInfo->statusQueueSize;
 
     {
-      const NvU64 statusQueueOffset = pMQCollection->pageTableSize + pRmQueueInfo->commandQueueSize;
       const struct GspMsgQueueInfo info = {
-        .status_queue_offset = statusQueueOffset,
-        .status_queue_size   = pRmQueueInfo->statusQueueSize,
-        .rx_seq_num_addr   = &pRmQueueInfo->rxSeqNum,
         .shared_mem_kva    = (NvU64)(NvUPtr)NvP64_VALUE(pVaKernel),
         .shared_mem_size   = sharedBufSize,
         .cmd_queue_offset  = pMQCollection->pageTableSize,
         .cmd_queue_size    = pRmQueueInfo->commandQueueSize,
+        .status_queue_offset = pMQCollection->pageTableSize + pRmQueueInfo->commandQueueSize,
+        .status_queue_size   = pRmQueueInfo->statusQueueSize,
+        .rx_seq_num_addr   = &pRmQueueInfo->rxSeqNum,
       };
       setGspMsgQueueInfo(&info);
     }

@@ -264,6 +264,7 @@ nv_procfs_read_instrumentation(
     if (info->rx_seq_num_addr != NULL)
       seq_printf(s, "rx_seq_num=%u\n",   *info->rx_seq_num_addr);
     seq_printf(s, "staging_kva=0x%llx\n",         info->staging_kva);
+    seq_printf(s, "staging_size=0x%llx\n",        info->staging_size);
     seq_printf(s, "staging_isolated=%llu\n",      info->staging_isolated);
 
     return 0;

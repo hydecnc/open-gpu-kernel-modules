@@ -9,8 +9,9 @@ void setGspMsgQueueInfo(const struct GspMsgQueueInfo *info) {
   info_valid = 1;
 }
 
-void setGspStagingBuffer(NvU64 kva, NvU64 isolated) {
+void setGspStagingBuffer(NvU64 kva, NvU64 size, NvU64 isolated) {
   cached_info.staging_kva = kva;
+  cached_info.staging_size = size;
   cached_info.staging_isolated = isolated;
 }
 
