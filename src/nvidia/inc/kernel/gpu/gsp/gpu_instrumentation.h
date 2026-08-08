@@ -20,9 +20,21 @@ struct GspMsgQueueInfo {
   NvU64 shared_mem_size;
   NvU64 cmd_queue_offset;
   NvU64 cmd_queue_size;
+
+  //
+  // pCmdQueueElement, the staging buffer the elemCount overflow lands in.
+  // Whether KASAN can see the overrun depends entirely on where this came from:
+  // a kmalloc'd buffer carries a redzone, a vmalloc'd one only does under
+  // CONFIG_KASAN_VMALLOC, and an embedded one (staging_isolated == 0) has
+  // pMetaData sitting in-bounds right behind it, so there is nothing to hit.
+  //
+  NvU64 staging_kva;
+  NvU64 staging_size;
+  NvU64 staging_isolated;
 };
 
 void setGspMsgQueueInfo(const struct GspMsgQueueInfo *info);
+void setGspStagingBuffer(NvU64 kva, NvU64 size, NvU64 isolated);
 void clearGspMsgQueueInfo(void);
 const struct GspMsgQueueInfo *getGspMsgQueueInfo(void);
 

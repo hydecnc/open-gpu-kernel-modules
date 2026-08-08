@@ -264,6 +264,9 @@ nv_procfs_read_instrumentation(
     seq_printf(s, "shared_mem_size=0x%llx\n",     info->shared_mem_size);
     seq_printf(s, "cmd_queue_offset=0x%llx\n",    info->cmd_queue_offset);
     seq_printf(s, "cmd_queue_size=0x%llx\n",      info->cmd_queue_size);
+    seq_printf(s, "staging_kva=0x%llx\n",         info->staging_kva);
+    seq_printf(s, "staging_size=0x%llx\n",        info->staging_size);
+    seq_printf(s, "staging_isolated=%llu\n",      info->staging_isolated);
 
     return 0;
 }

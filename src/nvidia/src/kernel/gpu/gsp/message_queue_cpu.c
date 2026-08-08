@@ -167,6 +167,18 @@ _gspMsgQueueInit
     pMQI->pMetaData = (void *)((NvUPtr)pMQI->pCmdQueueElement + GSP_MSG_QUEUE_ELEMENT_SIZE_MAX);
 #endif
 
+    //
+    // Report where the staging buffer landed. Whether the elemCount overflow is
+    // visible to KASAN depends on this address, not on the injection.
+    //
+#ifdef GPU_INSTRUMENTATION
+    setGspStagingBuffer((NvU64)(NvUPtr)pMQI->pCmdQueueElement,
+                        GSP_MSG_QUEUE_ELEMENT_SIZE_MAX, 1);
+#else
+    setGspStagingBuffer((NvU64)(NvUPtr)pMQI->pCmdQueueElement,
+                        GSP_MSG_QUEUE_ELEMENT_SIZE_MAX, 0);
+#endif
+
     nRet = msgqInit(&pMQI->hQueue, pMQI->pMetaData);
     if (nRet < 0)
     {

@@ -12,6 +12,9 @@ struct GspMsgQueueInfo {
   u64 shared_mem_size;
   u64 cmd_queue_offset;
   u64 cmd_queue_size;
+  u64 staging_kva;
+  u64 staging_size;
+  u64 staging_isolated;
 };
 
 const struct GspMsgQueueInfo *getGspMsgQueueInfo(void);
