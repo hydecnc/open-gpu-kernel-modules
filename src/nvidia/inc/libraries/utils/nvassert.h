@@ -119,6 +119,10 @@ void __coverity_panic__(void);
 #define COVERITY_ASSERT_FAIL() __coverity_panic__()
 #else  // defined(__COVERITY__)
 #define COVERITY_ASSERT_FAIL() ((void) 0)
+#ifdef PANIC_ON_ASSERT
+void panic(const char *fmt, ...);
+#endif
+void dump_stack(void);
 #endif // defined(__COVERITY__)
 #endif // !defined(COVERITY_ASSERT_FAIL)
 
@@ -158,6 +162,17 @@ void nvAssertDestroy(void);
 void nvAssertFailed(NV_ASSERT_FAILED_FUNC_TYPE);
 void nvAssertOkFailed(NvU32 status NV_ASSERT_FAILED_FUNC_COMMA_TYPE);
 
+#ifdef PANIC_ON_ASSERT
+#define NV_ASSERT_FAILED(exprStr)                                              \
+    do {                                                                       \
+        NV_LOG_SPECIAL(LEVEL_ERROR, RM_GSP_LOG_SPECIAL_ASSERT_FAILED,          \
+                       exprStr "\n");                                          \
+        nvAssertFailed(0);                                                     \
+        dump_stack();                                                          \
+        panic("NV_ASSERT_FAILED");                                             \
+        PORT_BREAKPOINT();                                                     \
+    } while(0)
+#else
 #define NV_ASSERT_FAILED(exprStr)                                              \
     do {                                                                       \
         NV_LOG_SPECIAL(LEVEL_ERROR, RM_GSP_LOG_SPECIAL_ASSERT_FAILED,          \
@@ -165,7 +180,19 @@ void nvAssertOkFailed(NvU32 status NV_ASSERT_FAILED_FUNC_COMMA_TYPE);
         nvAssertFailed(0);                                                     \
         PORT_BREAKPOINT();                                                     \
     } while(0)
+#endif
 
+#ifdef PANIC_ON_ASSERT
+#define NV_ASSERT_OK_FAILED(exprStr, status)                                   \
+    do {                                                                       \
+        NV_LOG_SPECIAL(LEVEL_ERROR, RM_GSP_LOG_SPECIAL_ASSERT_OK_FAILED,       \
+                       exprStr "\n", status);                                  \
+        nvAssertOkFailed(status, 0);                                           \
+        dump_stack();                                                          \
+        panic("NV_ASSERT_OK_FAILED");                                          \
+        PORT_BREAKPOINT();                                                     \
+    } while(0)
+#else
 #define NV_ASSERT_OK_FAILED(exprStr, status)                                   \
     do {                                                                       \
         NV_LOG_SPECIAL(LEVEL_ERROR, RM_GSP_LOG_SPECIAL_ASSERT_OK_FAILED,       \
@@ -173,6 +200,7 @@ void nvAssertOkFailed(NvU32 status NV_ASSERT_FAILED_FUNC_COMMA_TYPE);
         nvAssertOkFailed(status, 0);                                           \
         PORT_BREAKPOINT();                                                     \
     } while(0)
+#endif
 
 #define NV_CHECK_FAILED(level, exprStr)                                        \
    do {                                                                        \
@@ -216,13 +244,36 @@ void nvCheckOkFailedNoLog(NvU32 level, NvU32 status NV_ASSERT_FAILED_FUNC_COMMA_
     NVLOG_PRINTF(NV_PRINTF_MODULE, NVLOG_ROUTE_RM, level,                      \
     NV_PRINTF_ADD_PREFIX(fmt), ##__VA_ARGS__)
 
+#ifdef PANIC_ON_ASSERT
+#define NV_ASSERT_FAILED(exprStr)                                              \
+    do {                                                                       \
+        NV_ASSERT_LOG(LEVEL_ERROR, "Assertion failed: " exprStr);              \
+        nvAssertFailedNoLog(NV_ASSERT_FAILED_FUNC_PARAM(exprStr));             \
+        dump_stack();                                                          \
+        panic("NV_ASSERT_FAILED");                                             \
+        PORT_BREAKPOINT_CHECKED();                                             \
+    } while(0)
+#else
 #define NV_ASSERT_FAILED(exprStr)                                              \
     do {                                                                       \
         NV_ASSERT_LOG(LEVEL_ERROR, "Assertion failed: " exprStr);              \
         nvAssertFailedNoLog(NV_ASSERT_FAILED_FUNC_PARAM(exprStr));             \
         PORT_BREAKPOINT_CHECKED();                                             \
     } while(0)
+#endif
 
+#ifdef PANIC_ON_ASSERT
+#define NV_ASSERT_OK_FAILED(exprStr, status)                                   \
+    do {                                                                       \
+        NV_ASSERT_LOG(LEVEL_ERROR, "Assertion failed: 0x%08X returned from "   \
+            exprStr, status);                                                  \
+        nvAssertOkFailedNoLog(status                                           \
+            NV_ASSERT_FAILED_FUNC_COMMA_PARAM(exprStr));                       \
+        dump_stack();                                                          \
+        panic("NV_ASSERT_OK_FAILED");                                          \
+        PORT_BREAKPOINT_CHECKED();                                             \
+    } while(0)
+#else
 #define NV_ASSERT_OK_FAILED(exprStr, status)                                   \
     do {                                                                       \
         NV_ASSERT_LOG(LEVEL_ERROR, "Assertion failed: 0x%08X returned from "   \
@@ -231,6 +282,7 @@ void nvCheckOkFailedNoLog(NvU32 level, NvU32 status NV_ASSERT_FAILED_FUNC_COMMA_
             NV_ASSERT_FAILED_FUNC_COMMA_PARAM(exprStr));                       \
         PORT_BREAKPOINT_CHECKED();                                             \
     } while(0)
+#endif
 
 #define NV_CHECK_FAILED(level, exprStr)                                        \
     do {                                                                       \
@@ -253,17 +305,37 @@ void nvCheckOkFailedNoLog(NvU32 level, NvU32 status NV_ASSERT_FAILED_FUNC_COMMA_
         }                                                                      \
     } while(0)
 
+#ifdef PANIC_ON_ASSERT
+#define NV_ASSERT_FAILED_FUNC(exprStr)                                         \
+    do {                                                                       \
+        nvAssertFailed(NV_ASSERT_FAILED_FUNC_PARAM(exprStr));                  \
+        dump_stack();                                                          \
+        panic("NV_ASSERT_FAILED_FUNC");                                        \
+        PORT_BREAKPOINT_CHECKED();                                             \
+    } while(0)
+#else
 #define NV_ASSERT_FAILED_FUNC(exprStr)                                         \
     do {                                                                       \
         nvAssertFailed(NV_ASSERT_FAILED_FUNC_PARAM(exprStr));                  \
         PORT_BREAKPOINT_CHECKED();                                             \
     } while(0)
+#endif
 
+#ifdef PANIC_ON_ASSERT
+#define NV_ASSERT_OK_FAILED_FUNC(exprStr, status)                              \
+    do {                                                                       \
+        nvAssertOkFail(status NV_ASSERT_FAILED_FUNC_COMMA_PARAM(exprStr));     \
+        dump_stack();                                                          \
+        panic("NV_ASSERT_OK_FAILED_FUNC");                                     \
+        PORT_BREAKPOINT_CHECKED();                                             \
+    } while(0)
+#else
 #define NV_ASSERT_OK_FAILED_FUNC(exprStr, status)                              \
     do {                                                                       \
         nvAssertOkFail(status NV_ASSERT_FAILED_FUNC_COMMA_PARAM(exprStr));     \
         PORT_BREAKPOINT_CHECKED();                                             \
     } while(0)
+#endif
 
 #define NV_CHECK_FAILED_FUNC(level, exprStr)                                   \
     if (NV_PRINTF_LEVEL_ENABLED(level))                                        \
